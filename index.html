@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Investment Site</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .card { border: 1px solid #ccc; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+    input, select, button { margin: 5px 0; padding: 8px; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #eee; }
+  </style>
+</head>
+<body>
+  <h2>📊 User Dashboard</h2>
+  <div class="card">
+    <p><b>Available Balance:</b> <span id="balance">0</span> PKR</p>
+    <p><b>Total Deposit:</b> <span id="totalDeposit">0</span> PKR</p>
+    <p><b>Total Withdraw:</b> <span id="totalWithdraw">0</span> PKR</p>
+  </div>
+
+  <div class="card">
+    <h3>💰 Deposit</h3>
+    <p><b>EasyPaisa:</b> 0331-9535871</p>
+    <p><b>JazzCash:</b> 0315-9676813</p>
+    <p><b>USDT (TRC20):</b> TXX1234567890ABCDE</p>
+    <input type="number" id="depositAmount" placeholder="Enter Amount">
+    <input type="text" id="depositTxn" placeholder="Transaction ID">
+    <button onclick="makeDeposit()">Submit Deposit</button>
+  </div>
+
+  <div class="card">
+    <h3>🏧 Withdraw</h3>
+    <input type="number" id="withdrawAmount" placeholder="Enter Amount">
+    <select id="withdrawMethod">
+      <option value="EasyPaisa">EasyPaisa</option>
+      <option value="JazzCash">JazzCash</option>
+      <option value="USDT">USDT</option>
+    </select>
+    <input type="text" id="withdrawAccount" placeholder="Your Account / Wallet">
+    <button onclick="makeWithdraw()">Submit Withdraw</button>
+  </div>
+
+  <div class="card">
+    <h3>📜 History</h3>
+    <table>
+      <thead>
+        <tr><th>Type</th><th>Amount</th><th>Details</th><th>Status</th></tr>
+      </thead>
+      <tbody id="history"></tbody>
+    </table>
+  </div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("investmentData")) || {
+  balance: 0, totalDeposit: 0, totalWithdraw: 0, history: [], deposits: [], withdraws: []
+};
+
+function updateUI() {
+  document.getElementById("balance").innerText = data.balance;
+  document.getElementById("totalDeposit").innerText = data.totalDeposit;
+  document.getElementById("totalWithdraw").innerText = data.totalWithdraw;
+
+  let h = "";
+  data.history.forEach(r => {
+    h += `<tr><td>${r.type}</td><td>${r.amount}</td><td>${r.details}</td><td>${r.status}</td></tr>`;
+  });
+  document.getElementById("history").innerHTML = h;
+}
+updateUI();
+
+function makeDeposit() {
+  let amt = parseInt(document.getElementById("depositAmount").value);
+  let txn = document.getElementById("depositTxn").value;
+  if (!amt || !txn) return alert("Enter amount and transaction ID");
+  let req = {type:"Deposit", amount:amt, details:"Txn: "+txn, status:"Pending"};
+  data.history.push(req);
+  data.deposits.push(req);
+  localStorage.setItem("investmentData", JSON.stringify(data));
+  updateUI();
+  alert("Deposit request submitted!");
+}
+
+function makeWithdraw() {
+  let amt = parseInt(document.getElementById("withdrawAmount").value);
+  let method = document.getElementById("withdrawMethod").value;
+  let acc = document.getElementById("withdrawAccount").value;
+  if (!amt || !acc) return alert("Enter amount and account/wallet");
+  if (amt > data.balance) return alert("Insufficient balance!");
+  let req = {type:"Withdraw", amount:amt, details:method+" - "+acc, status:"Pending"};
+  data.history.push(req);
+  data.withdraws.push(req);
+  localStorage.setItem("investmentData", JSON.stringify(data));
+  updateUI();
+  alert("Withdraw request submitted!");
+}
+</script>
+</body>
+</html>
